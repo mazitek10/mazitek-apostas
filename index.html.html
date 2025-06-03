@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Aposta de Sinuca</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; }
+    label, select, input { margin: 10px 0; display: block; }
+    button { margin-top: 10px; padding: 10px; }
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+  <h1>Aposta de Sinuca</h1>
+
+  <label>Jogador 1:
+    <input type="text" id="jogador1" required>
+  </label>
+
+  <label>Jogador 2:
+    <input type="text" id="jogador2" required>
+  </label>
+
+  <label>Valor da Aposta:
+    <select id="valor">
+      <option value="250">R$250,00</option>
+      <option value="500">R$500,00</option>
+      <option value="1000">R$1000,00</option>
+    </select>
+  </label>
+
+  <button onclick="criarAposta()">Criar Aposta</button>
+
+  <div id="confirmacao" class="hidden">
+    <h2>Confirmação</h2>
+    <button onclick="confirmarAposta('jogador1')">{Jogador 1} Confirmar</button>
+    <button onclick="confirmarAposta('jogador2')">{Jogador 2} Confirmar</button>
+  </div>
+
+  <div id="finalizacao" class="hidden">
+    <h2>Finalizar Aposta</h2>
+    <label>Vencedor:
+      <select id="vencedor">
+        <option id="vencedor1"></option>
+        <option id="vencedor2"></option>
+      </select>
+    </label>
+    <button onclick="finalizarAposta()">Finalizar</button>
+  </div>
+
+  <h2 id="resultado"></h2>
+
+  <script>
+    let aposta = {
+      jogador1: '',
+      jogador2: '',
+      valor: 0,
+      confirmacoes: { jogador1: false, jogador2: false },
+      finalizada: false,
+      vencedor: ''
+    };
+
+    function criarAposta() {
+      aposta.jogador1 = document.getElementById('jogador1').value;
+      aposta.jogador2 = document.getElementById('jogador2').value;
+      aposta.valor = parseInt(document.getElementById('valor').value);
+      
+      if (!aposta.jogador1 || !aposta.jogador2) {
+        alert('Preencha os nomes dos jogadores.');
+        return;
+      }
+
+      document.getElementById('confirmacao').classList.remove('hidden');
+      document.querySelector("button[onclick*='jogador1']").innerText = aposta.jogador1 + ' Confirmar';
+      document.querySelector("button[onclick*='jogador2']").innerText = aposta.jogador2 + ' Confirmar';
+
+      document.getElementById('vencedor1').innerText = aposta.jogador1;
+      document.getElementById('vencedor2').innerText = aposta.jogador2;
+    }
+
+    function confirmarAposta(jogadorKey) {
+      aposta.confirmacoes[jogadorKey] = true;
+      alert(aposta[jogadorKey] + ' confirmou a aposta!');
+
+      if (aposta.confirmacoes.jogador1 && aposta.confirmacoes.jogador2) {
+        document.getElementById('finalizacao').classList.remove('hidden');
+      }
+    }
+
+    function finalizarAposta() {
+      const vencedor = document.getElementById('vencedor').value;
+      aposta.vencedor = vencedor;
+      aposta.finalizada = true;
+      
+      document.getElementById('resultado').innerText = `Aposta Finalizada! Vencedor: ${vencedor}. Valor: R$${aposta.valor},00.`;
+
+      // Reseta para uma nova aposta (opcional)
+      // aposta = { jogador1: '', jogador2: '', valor: 0, confirmacoes: { jogador1: false, jogador2: false }, finalizada: false, vencedor: '' };
+    }
+  </script>
+</body>
+</html>
