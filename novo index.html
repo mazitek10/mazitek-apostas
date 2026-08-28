@@ -1,0 +1,163 @@
+﻿<!DOCTYPE html>
+<html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Overlay Placar Mazitek</title>
+<script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script><script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script><script src="firebase-config.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}html,body{width:100%;min-height:100%;background:transparent}body{font-family:Arial,sans-serif;overflow:hidden}:root{--score-bg:#121212;--team1-bg:#1565c0;--team2-bg:#ef6c00;--name1-color:#fff;--name2-color:#fff;--center-bg:#111;--score-bg-box:#fff;--score-text:#000;--balls-bg:#000;--name-size:40px;--ball-size:56px;--message-bg:#111;--message-color:#fff;--message-size:24px;--clock-color:#fff;--city-color:#fff}
+@keyframes mazitekPointPulse{0%{transform:scale(1)}30%{transform:scale(1.18);filter:brightness(1.5)}100%{transform:scale(1)}}
+.score-box.pulse,.row-score.pulse{animation:mazitekPointPulse .5s ease}
+.scoreboard-wrap.live-off{display:none!important}
+.scoreboard-wrap{width:100%;display:flex;justify-content:center;padding-top:16px}.scoreboard{width:min(1100px,calc(100vw - 24px));background:var(--score-bg);border:2px solid rgba(255,255,255,.1);border-radius:18px;overflow:hidden}.top-bar{display:grid;grid-template-columns:minmax(0,1fr) minmax(180px,max-content) minmax(0,1fr)}.team{display:flex;align-items:center;justify-content:center;padding:15px;min-width:0}.team.left{background:var(--team1-bg)}.team.right{background:var(--team2-bg)}.team-name{font-size:clamp(22px,3.4vw,var(--name-size));font-weight:900;text-transform:uppercase;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%}.center-score{background:var(--center-bg);display:flex;align-items:center;justify-content:center;gap:15px}.score-box{min-width:64px;width:auto;padding:0 12px;height:80px;background:var(--score-bg-box);color:var(--score-text);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:50px;font-weight:900;box-sizing:border-box}.bottom-bar{display:grid;grid-template-columns:1fr 1fr;background:var(--balls-bg);padding:10px 0}.bottom-bar.shared{grid-template-columns:1fr}.bottom-bar.shared #balls1{grid-column:1}.bottom-bar.shared #balls2{display:none}.balls-group{display:flex;justify-content:center;flex-wrap:wrap;gap:8px;padding:0 8px}.ball{width:var(--ball-size);height:var(--ball-size);border-radius:50%;border:2px solid #fff;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:calc(var(--ball-size)*.35);color:#111;flex:0 0 var(--ball-size)}.ball.off{opacity:.15;filter:grayscale(1)}.ball.vez{box-shadow:0 0 0 3px #f2b705,0 0 16px rgba(242,183,5,.65)!important;transform:scale(1.1)}.score-box{position:relative}.games-bar{display:none;align-items:center;justify-content:center;gap:18px;background:linear-gradient(180deg,#1a1a1a,#0a0a0a);border-top:1px solid rgba(255,255,255,.08);border-bottom:1px solid rgba(255,255,255,.08);padding:8px 12px}.games-bar.show{display:flex}.games-num{font-size:38px;font-weight:1000;color:#f2b705;line-height:1;min-width:38px;text-align:center;text-shadow:0 2px 4px rgba(0,0,0,.6)}.games-label{font-size:15px;font-weight:900;letter-spacing:1.5px;color:#e8e8e8;text-transform:uppercase}.series-bar{display:none;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap;background:#000;padding:12px 14px}.series-bar.show{display:flex}.series-slot{display:flex;flex-direction:column;align-items:center;gap:3px;background:#0c0c0c;border:1px solid rgba(255,255,255,.14);border-radius:9px;padding:5px 9px 6px}.series-slot-index{font-size:9px;font-weight:800;color:#9a9a9a;letter-spacing:.6px;text-transform:uppercase}.series-slot-pair{display:flex;align-items:center;gap:6px}.series-num{min-width:34px;height:34px;padding:0 6px;border:2px solid #565656;border-radius:7px;background:#141414;color:#eaeaea;font-size:var(--series-size,20px);font-weight:900;display:flex;align-items:center;justify-content:center}.series-num.winner{border-color:var(--series-color,#f2b705);color:var(--series-color,#f2b705);background:#1a1400;box-shadow:0 0 8px rgba(242,183,5,.35)}.series-x{color:#a0a0a0;font-weight:900;font-size:12px}.tacada-bar{display:none;align-items:center;justify-content:center;gap:14px;background:linear-gradient(180deg,#141414,#050505);border-top:1px solid rgba(255,255,255,.08);padding:9px 14px}.tacada-bar.show{display:flex}.tacada-balls{display:flex;align-items:center;gap:6px;flex-wrap:wrap;justify-content:center;min-height:30px}.tacada-balls .ball{width:30px;height:30px;font-size:14px;flex:0 0 30px}.tacada-label{font-size:14px;font-weight:900;letter-spacing:1.5px;color:#e8ac0e;text-transform:uppercase}.tacada-total{font-size:26px;font-weight:1000;color:#e8ac0e;min-width:32px;text-align:center}.player-rows{display:none;grid-template-columns:88px minmax(200px,max-content) minmax(140px,1fr) minmax(90px,max-content);row-gap:10px;background:transparent;padding:10px 8px 12px}.player-row{display:grid;grid-template-columns:subgrid;grid-column:1/-1;min-height:104px;align-items:stretch;border-radius:10px;overflow:hidden;background:linear-gradient(180deg,#171717,#050505);position:relative}.player1{border:2px solid #178cff;box-shadow:0 0 8px #178cff,0 0 18px rgba(23,140,255,.55),inset 0 0 14px rgba(23,140,255,.14)}.player2{border:2px solid #ff2a2a;box-shadow:0 0 8px #ff2a2a,0 0 18px rgba(255,42,42,.48),inset 0 0 14px rgba(255,42,42,.12)}.row-player-number{display:flex;align-items:center;justify-content:center;font-size:56px;font-weight:1000;color:#fff;line-height:1;border-right:2px solid rgba(255,255,255,.16);text-shadow:0 2px 3px rgba(0,0,0,.55)}.player1 .row-player-number{background:linear-gradient(180deg,#0f56c7,#082b74)}.player2 .row-player-number{background:linear-gradient(180deg,#bd1717,#650707)}.row-name{height:100%;display:flex;align-items:center;padding:0 22px;font-size:clamp(28px,4vw,var(--name-size));font-weight:1000;letter-spacing:.4px;text-transform:uppercase;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;background:linear-gradient(180deg,#1a1a1a,#080808);border-right:1px solid rgba(255,255,255,.09)}.player1 .row-name{color:var(--name1-color)}.player2 .row-name{color:var(--name2-color)}.row-balls{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:10px;padding:10px 14px;background:linear-gradient(180deg,#121212,#030303);height:100%;overflow:visible;min-width:0}.player-rows.balls-hidden .row-balls{visibility:hidden}.player-rows.shared .player2 .row-balls{align-items:center;justify-content:center}.player-rows.shared .player2 .row-balls::before{content:"BOLAS COMPARTILHADAS ↑";color:#666;font-size:14px;font-weight:800;letter-spacing:.5px}.row-score{height:100%;display:flex;align-items:center;justify-content:center;padding:0 20px;background:linear-gradient(180deg,#fff,#e8e8e8);color:#050505;font-size:58px;font-weight:1000;letter-spacing:1px;border-left:2px solid rgba(255,255,255,.25);text-shadow:0 1px 0 #fff}.message-area{display:none;background:var(--message-bg);color:var(--message-color);font-size:var(--message-size);font-weight:800;line-height:1.28;text-align:center;white-space:pre-wrap;overflow-wrap:anywhere;padding:10px 18px;border-top:1px solid rgba(255,255,255,.08)}.message-area.show{display:block}.hidden{display:none!important}
+@media(max-width:760px){.top-bar{grid-template-columns:1fr minmax(120px,max-content) 1fr}.score-box{min-width:48px;width:auto;padding:0 8px;height:62px;font-size:38px}.games-bar{gap:12px;padding:6px 8px}.games-num{font-size:26px;min-width:26px}.games-label{font-size:11px;letter-spacing:1px}.series-bar{gap:8px;padding:8px 8px}.series-slot{padding:3px 6px 4px;gap:2px}.series-slot-index{font-size:7px}.series-num{min-width:24px;height:24px;font-size:min(var(--series-size,20px),14px)}.series-x{font-size:9px}.tacada-bar{gap:8px;padding:6px 8px}.tacada-balls .ball{width:22px;height:22px;font-size:11px;flex:0 0 22px}.tacada-label{font-size:11px}.tacada-total{font-size:18px}.team{padding:10px 6px}.player-rows{padding:6px 4px 8px;grid-template-columns:52px minmax(110px,max-content) minmax(90px,1fr) minmax(56px,max-content);row-gap:7px}.player-row{min-height:72px;border-radius:7px}.row-player-number{font-size:34px}.row-name{padding:0 10px;font-size:clamp(18px,4vw,30px)}.row-score{font-size:38px;padding:0 12px}.row-balls{gap:5px;padding:5px 7px}.row-balls .ball{width:min(var(--ball-size),46px);height:min(var(--ball-size),46px);flex-basis:min(var(--ball-size),46px);font-size:16px}}
+</style>
+<style id="mazitek-3d-balls">
+/* Acabamento das bolas: bola sólida colorida com selo branco do número (estilo clássico de sinuca) */
+.ball{
+  position:relative;
+  overflow:hidden;
+  isolation:isolate;
+  border:2px solid rgba(255,255,255,.9)!important;
+  box-shadow:
+    0 7px 10px rgba(0,0,0,.55),
+    0 2px 2px rgba(0,0,0,.65),
+    inset 0 7px 10px rgba(255,255,255,.25),
+    inset 0 -10px 13px rgba(0,0,0,.35)!important;
+  color:#111!important;
+  text-shadow:none;
+}
+.ball::before{
+  content:"";
+  position:absolute;
+  z-index:-1;
+  width:58%;
+  height:58%;
+  left:21%;
+  top:21%;
+  border-radius:50%;
+  background:radial-gradient(circle at 38% 30%,#ffffff 0%,#f6f6f6 55%,#e0e0e0 100%);
+  box-shadow:0 1px 3px rgba(0,0,0,.4),inset 0 -2px 3px rgba(0,0,0,.08);
+  pointer-events:none;
+}
+.ball::after{
+  content:"";
+  position:absolute;
+  z-index:-2;
+  inset:0;
+  border-radius:50%;
+  background:radial-gradient(circle at 32% 24%,
+    rgba(255,255,255,.55) 0 8%,
+    rgba(255,255,255,0) 36%,
+    rgba(0,0,0,.06) 60%,
+    rgba(0,0,0,.4) 100%);
+  pointer-events:none;
+}
+.ball.yellow{background:radial-gradient(circle at 32% 25%,#fff4a0 0%,#ffd83d 27%,#e2ad00 68%,#775300 100%)}
+.ball.blue{background:radial-gradient(circle at 32% 25%,#8bc5ff 0%,#218be5 28%,#0753aa 68%,#031d54 100%)}
+.ball.red{background:radial-gradient(circle at 32% 25%,#ff9b91 0%,#ef4138 28%,#b51612 68%,#520504 100%)}
+.ball.purple{background:radial-gradient(circle at 32% 25%,#e6a5ff 0%,#a63ac4 28%,#6f168b 68%,#30043f 100%)}
+.ball.orange{background:radial-gradient(circle at 32% 25%,#ffd09a 0%,#ff9228 28%,#d95a00 68%,#713000 100%)}
+.ball.green{background:radial-gradient(circle at 32% 25%,#a2efac 0%,#45b95a 28%,#167a2d 68%,#063714 100%)}
+.ball.brown{background:radial-gradient(circle at 32% 25%,#d4a68e 0%,#8b5a43 30%,#583322 68%,#24130d 100%)}
+.ball.black{background:radial-gradient(circle at 32% 25%,#a9a9a9 0%,#383838 27%,#111 62%,#000 100%)}
+.ball.wine{background:radial-gradient(circle at 32% 25%,#df8585 0%,#8e2929 30%,#5e1010 68%,#280606 100%)}
+.ball.pink{background:radial-gradient(circle at 32% 25%,#ffd0e6 0%,#ef79ad 30%,#c43e7c 68%,#68173f 100%)}
+.ball.off{opacity:.22!important;filter:grayscale(1) brightness(.78)!important;box-shadow:inset 0 5px 8px rgba(255,255,255,.14),inset 0 -8px 10px rgba(0,0,0,.5)!important}
+</style>
+
+<style id="mazitek-clean-top">
+:root{--clock-size:22px;--city-size:22px;--series-color:#f2b705;--series-size:22px}
+.scoreboard-wrap{padding-top:10px}
+.clean-top{display:flex;align-items:center;justify-content:center;gap:34px;min-height:88px;padding:8px 12px 10px;background:transparent!important;border:0!important;box-shadow:none!important;overflow:visible}
+.clean-clock,.clean-city{position:relative;display:flex;align-items:center;height:44px;margin-left:44px;padding:0 22px;border-radius:0 10px 10px 0;font-weight:900;line-height:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:min(52vw,520px);box-shadow:0 4px 10px rgba(0,0,0,.5)}
+.clean-clock{font-size:var(--clock-size);color:#fff;background:linear-gradient(90deg,var(--clock-color),color-mix(in srgb,var(--clock-color) 55%,#000))}
+.clean-city{font-size:var(--city-size);color:#fff;background:linear-gradient(90deg,var(--city-color),color-mix(in srgb,var(--city-color) 55%,#000))}
+.clean-clock::before,.clean-city::before{position:absolute;left:-44px;top:50%;transform:translateY(-50%);width:40px;height:40px;background:#fff;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;box-shadow:0 4px 10px rgba(0,0,0,.5);z-index:2}
+.clean-clock::before{content:"🕐"}
+.clean-city::before{content:"📍"}
+.clean-clock::after,.clean-city::after{content:"";position:absolute;left:-13px;top:50%;transform:translateY(-50%);width:0;height:0;border-top:22px solid transparent;border-bottom:22px solid transparent;z-index:1}
+.clean-clock::after{border-right:13px solid color-mix(in srgb,var(--clock-color) 55%,#000)}
+.clean-city::after{border-right:13px solid color-mix(in srgb,var(--city-color) 55%,#000)}
+@media(max-width:700px){.clean-top{min-height:64px;padding:5px 7px 7px;gap:20px}.clean-clock,.clean-city{height:32px;margin-left:32px;padding:0 14px;max-width:min(60vw,300px);font-size:15px}.clean-clock::before,.clean-city::before{left:-32px;width:28px;height:28px;font-size:14px}.clean-clock::after,.clean-city::after{left:-9px;border-top-width:16px;border-bottom-width:16px;border-right-width:9px}}
+</style>
+
+<style id="mazitek-transparent-bg">
+html, body {
+  background: transparent !important;
+  background-color: transparent !important;
+}
+body {
+  margin: 0 !important;
+}
+.scoreboard-wrap {
+  background: transparent !important;
+  background-color: transparent !important;
+}
+.scoreboard {
+  background: transparent !important;
+  background-color: transparent !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+}
+.clean-top {
+  background: transparent !important;
+}
+</style>
+
+
+</head><body><div class="scoreboard-wrap"><div class="scoreboard">
+<div class="clean-top" id="cleanTop">
+<div class="clean-clock" id="clockValue">--/--/---- --:--</div>
+<div class="clean-city" id="cityValue">SÃO PAULO</div>
+</div>
+<div class="top-bar" id="topBar"><div class="team left"><div class="team-name" id="name1" style="color:var(--name1-color)">JOGADOR 1</div></div><div class="center-score"><div class="score-box" id="score1"><span id="scoreNum1">0</span></div><b style="color:white;font-size:24px">X</b><div class="score-box" id="score2"><span id="scoreNum2">0</span></div></div><div class="team right"><div class="team-name" id="name2" style="color:var(--name2-color)">JOGADOR 2</div></div></div>
+<div class="series-bar" id="seriesBar"></div>
+<div class="games-bar" id="gamesBar"><div class="games-num" id="gamesBarNum1">0</div><div class="games-label">PARTIDAS</div><div class="games-num" id="gamesBarNum2">0</div></div>
+<div class="player-rows" id="playerRows">
+<div class="player-row player1"><div class="row-player-number">1</div><div class="row-name" id="rowName1">JOGADOR 1</div><div class="row-balls" id="inlineBalls1"></div><div class="row-score" id="rowScore1"><span id="rowScoreNum1">0</span></div></div>
+<div class="player-row player2"><div class="row-player-number">2</div><div class="row-name" id="rowName2">JOGADOR 2</div><div class="row-balls" id="inlineBalls2"></div><div class="row-score" id="rowScore2"><span id="rowScoreNum2">0</span></div></div>
+</div>
+<div class="bottom-bar" id="bottomBar"><div class="balls-group" id="balls1"></div><div class="balls-group" id="balls2"></div></div>
+<div class="tacada-bar" id="tacadaBar"><div class="tacada-balls" id="tacadaBalls"></div><div class="tacada-label">TACADA</div><div class="tacada-total" id="tacadaTotal">0</div></div>
+<div class="message-area" id="messageArea"></div>
+</div></div>
+
+<script>
+'use strict';const firebaseConfig=window.MAZITEK_FIREBASE_CONFIG||{apiKey:'SUA_API_KEY',databaseURL:'https://SEU-PROJETO-default-rtdb.firebaseio.com',projectId:'SEU-PROJETO'};const MODES={bolinho:'shared',par_impar:'owned',bola_8:'owned',bola_lisa:'owned',regra_brasileira:'shared',six_red:'shared',inglesa:'shared'};const STATE_KEY='mazitek_placar_state',CHANNEL_NAME='mazitek_placar_channel';const channel=('BroadcastChannel'in window)?new BroadcastChannel(CHANNEL_NAME):null;let firebaseRef=null;
+function base(){return{name1:'JOGADOR 1',name2:'JOGADOR 2',city:'SÃO PAULO',message:'',showMessage:true,score1:0,score2:0,partidas:{1:0,2:0},tacada:{jogador:0,bolas:[],total:0},series:{enabled:false,size:5,scores:[]},autoCity:true,mode:'bolinho',ballLayout:'below',showBalls:true,ballStates:{1:[],2:[]},liveVisible:true,castigoEnabled:true,castigoBall:1,bolinhoFixedColor:false,appearance:{scoreBg:'#121212',team1Bg:'#1565c0',team2Bg:'#ef6c00',name1Color:'#fff',name2Color:'#fff',centerBg:'#111',scoreBoxBg:'#fff',scoreText:'#000',ballsBg:'#000',messageBg:'#111',messageColor:'#fff',clockColor:'#1565c0',cityColor:'#ef6c00',seriesColor:'#f2b705',nameSize:40,ballSize:56,messageSize:24,clockSize:22,citySize:22,seriesSize:22}}}function safe(v,f){try{return v?JSON.parse(v):f}catch(_){return f}}function repair(v){let t=String(v??'');if(!/[ÃÂâ]/.test(t))return t;try{return decodeURIComponent(escape(t))}catch(_){return t}}function norm(d){d=d&&typeof d==='object'?d:{};const b=base();return{...b,...d,mode:MODES[d.mode]?d.mode:'bolinho',name1:repair(d.name1??b.name1),name2:repair(d.name2??b.name2),city:repair(d.city??b.city),message:repair(d.message??b.message),score1:Math.max(0,Number(d.score1)||0),score2:Math.max(0,Number(d.score2)||0),partidas:{1:Math.max(0,Number(d.partidas?.[1])||0),2:Math.max(0,Number(d.partidas?.[2])||0)},tacada:{jogador:Number(d.tacada?.jogador)||0,bolas:Array.isArray(d.tacada?.bolas)?d.tacada.bolas:[],total:Math.max(0,Number(d.tacada?.total)||0)},series:{enabled:!!d.series?.enabled,size:Math.max(1,Math.min(9,Number(d.series?.size)||5)),scores:Array.isArray(d.series?.scores)?d.series.scores.slice(0,9).map(x=>({a:Math.max(0,Number(x?.a)||0),b:Math.max(0,Number(x?.b)||0)})):[]},showMessage:d.showMessage!==false,ballLayout:d.ballLayout==='after_name'?'after_name':'below',showBalls:d.showBalls!==false,ballStates:{1:Array.isArray(d.ballStates?.[1])?d.ballStates[1]:[],2:Array.isArray(d.ballStates?.[2])?d.ballStates[2]:[]},liveVisible:d.liveVisible!==false,castigoEnabled:d.castigoEnabled!==false,castigoBall:Number(d.castigoBall)===15?15:1,bolinhoFixedColor:!!d.bolinhoFixedColor,appearance:{...b.appearance,...(d.appearance||{})}}}function load(){return norm(safe(localStorage.getItem(STATE_KEY),base()))}
+function apply(a){const r=document.documentElement.style,s=(k,v)=>r.setProperty(k,v);s('--score-bg',a.scoreBg);s('--team1-bg',a.team1Bg);s('--team2-bg',a.team2Bg);s('--name1-color',a.name1Color);s('--name2-color',a.name2Color);s('--center-bg',a.centerBg);s('--score-bg-box',a.scoreBoxBg);s('--score-text',a.scoreText);s('--balls-bg',a.ballsBg);s('--message-bg',a.messageBg);s('--message-color',a.messageColor);s('--clock-color',a.clockColor||'#1565c0');s('--city-color',a.cityColor||'#ef6c00');s('--series-color',a.seriesColor||'#f2b705');s('--name-size',Math.max(20,Math.min(60,Number(a.nameSize)||40))+'px');s('--ball-size',Math.max(32,Math.min(90,Number(a.ballSize)||56))+'px');s('--message-size',Math.max(14,Math.min(42,Number(a.messageSize)||24))+'px');s('--clock-size',Math.max(12,Math.min(48,Number(a.clockSize)||18))+'px');s('--city-size',Math.max(12,Math.min(48,Number(a.citySize)||18))+'px');s('--series-size',Math.max(14,Math.min(48,Number(a.seriesSize)||22))+'px')}
+function fitNames(s){const base=Math.max(20,Math.min(60,Number(s.appearance.nameSize)||40));[[name1,rowName1,s.name1],[name2,rowName2,s.name2]].forEach(([a,b,text])=>{const len=String(text||'').length;let size=base;if(len>18)size=base*0.55;else if(len>14)size=base*0.68;else if(len>10)size=base*0.8;else if(len>7)size=base*0.9;[a,b].forEach(el=>{if(el)el.style.fontSize=Math.round(size)+'px'})})}
+function renderBall(b,isVez){const d=document.createElement('div');d.className='ball '+(b.color||'yellow')+(b.off?' off':'')+(isVez?' vez':'');d.textContent=b.text??'';return d}function renderBalls(state){const shared=MODES[state.mode]==='shared';bottomBar.classList.toggle('shared',shared);[balls1,balls2,inlineBalls1,inlineBalls2].forEach(c=>c.innerHTML='');const isRb=state.mode==='regra_brasileira';[1,2].forEach(p=>{const list=state.ballStates[p]||[];let vezMarked=false;list.forEach(b=>{if(!b||b.hidden)return;const isVez=isRb&&p===1&&!b.off&&!vezMarked;if(isVez)vezMarked=true;document.getElementById('balls'+p).appendChild(renderBall(b,isVez));document.getElementById('inlineBalls'+p).appendChild(renderBall(b,isVez))})})}
+
+let prevScores={1:0,2:0};
+function pulse(...els){els.forEach(el=>{if(!el)return;el.classList.remove('pulse');void el.offsetWidth;el.classList.add('pulse')})}
+function renderTacada(s,isRb){tacadaBar.classList.toggle('show',isRb);if(!isRb)return;const t=s.tacada||{jogador:0,bolas:[],total:0};tacadaBalls.innerHTML='';(t.bolas||[]).forEach(b=>{const d=document.createElement('div');d.className='ball '+(b.c||'yellow');d.textContent=b.v??'';tacadaBalls.appendChild(d)});tacadaTotal.textContent=t.total||0}
+function renderSeries(s){
+  const ser=s.series||{enabled:false,size:5,scores:[]};
+  seriesBar.classList.toggle('show',!!ser.enabled&&ser.scores.length>0);
+  if(!ser.enabled)return;
+  seriesBar.innerHTML='';
+  ser.scores.forEach((sc,i)=>{
+    const slot=document.createElement('div');slot.className='series-slot';
+    const idx=document.createElement('div');idx.className='series-slot-index';idx.textContent='SÉRIES '+(i+1);
+    const pair=document.createElement('div');pair.className='series-slot-pair';
+    const a=document.createElement('div');a.className='series-num'+(sc.a>sc.b?' winner':'');a.textContent=sc.a;
+    const x=document.createElement('div');x.className='series-x';x.textContent='X';
+    const b=document.createElement('div');b.className='series-num'+(sc.b>sc.a?' winner':'');b.textContent=sc.b;
+    pair.appendChild(a);pair.appendChild(x);pair.appendChild(b);
+    slot.appendChild(idx);slot.appendChild(pair);
+    seriesBar.appendChild(slot);
+  });
+}
+function render(data){const s=norm(data);apply(s.appearance);name1.textContent=rowName1.textContent=s.name1;name2.textContent=rowName2.textContent=s.name2;fitNames(s);cityValue.textContent=s.city;if(s.score1!==prevScores[1])pulse(score1,rowScore1);if(s.score2!==prevScores[2])pulse(score2,rowScore2);prevScores={1:s.score1,2:s.score2};scoreNum1.textContent=rowScoreNum1.textContent=s.score1;scoreNum2.textContent=rowScoreNum2.textContent=s.score2;const isRb=s.mode==='regra_brasileira';gamesBarNum1.textContent=Number(s.partidas?.[1])||0;gamesBarNum2.textContent=Number(s.partidas?.[2])||0;gamesBar.classList.toggle('show',isRb);renderTacada(s,isRb);renderSeries(s);const shared=MODES[s.mode]==='shared';const inline=s.ballLayout==='after_name';topBar.style.display=inline?'none':'grid';playerRows.style.display=inline?'grid':'none';playerRows.classList.toggle('shared',shared);playerRows.classList.toggle('balls-hidden',!s.showBalls);bottomBar.style.display=(inline||!s.showBalls)?'none':'grid';messageArea.textContent=s.message||'';messageArea.classList.toggle('show',s.showMessage&&!!String(s.message||'').trim());renderBalls(s);document.querySelector('.scoreboard-wrap').classList.toggle('live-off',!s.liveVisible)}
+
+function configured(){return firebaseConfig.apiKey&&firebaseConfig.projectId&&firebaseConfig.databaseURL&&!firebaseConfig.apiKey.includes('SUA_')&&!firebaseConfig.projectId.includes('SEU-')}function initFirebase(){if(!configured()||typeof firebase==='undefined')return;try{if(!firebase.apps.length)firebase.initializeApp(firebaseConfig);firebaseRef=firebase.database().ref('mazitek_placar');firebaseRef.on('value',s=>{if(s.val()){const d=norm(s.val());localStorage.setItem(STATE_KEY,JSON.stringify(d));render(d)}});firebase.database().ref('.info/connected').on('value',snap=>{if(snap.val()===true)firebaseRef.once('value').then(s=>{if(s.val()){const d=norm(s.val());localStorage.setItem(STATE_KEY,JSON.stringify(d));render(d)}})});setInterval(()=>{if(firebaseRef)firebaseRef.once('value').then(s=>{if(s.val())render(norm(s.val()))}).catch(()=>{})},20000)}catch(e){console.error(e)}}window.addEventListener('storage',e=>{if(e.key===STATE_KEY&&e.newValue)render(safe(e.newValue,base()))});if(channel)channel.onmessage=e=>{if(e.data?.type==='state')render(e.data.state)};function clock(){const n=new Date();clockValue.textContent=n.toLocaleDateString('pt-BR')+' '+n.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit',second:'2-digit'})}render(load());initFirebase();clock();setInterval(clock,1000);
+
+let wakeLock=null;
+async function requestWakeLock(){
+  if(!('wakeLock'in navigator))return;
+  try{wakeLock=await navigator.wakeLock.request('screen');wakeLock.addEventListener('release',()=>{wakeLock=null})}
+  catch(e){console.warn('Wake Lock indisponível:',e)}
+}
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'){requestWakeLock();if(firebaseRef){try{firebase.database().goOnline()}catch(_){}firebaseRef.once('value').then(s=>{if(s.val()){const d=norm(s.val());localStorage.setItem(STATE_KEY,JSON.stringify(d));render(d)}}).catch(()=>{})}}});
+requestWakeLock();
+
+</script></body></html>
